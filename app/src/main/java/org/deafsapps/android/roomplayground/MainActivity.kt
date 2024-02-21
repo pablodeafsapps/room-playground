@@ -25,6 +25,8 @@ import org.deafsapps.android.roomplayground.data.db.entity.ComponentEntity
 import org.deafsapps.android.roomplayground.data.db.entity.ComponentWithElements
 import org.deafsapps.android.roomplayground.data.db.entity.CreationEntity
 import org.deafsapps.android.roomplayground.data.db.entity.ElementEntity
+import org.deafsapps.android.roomplayground.data.db.entity.ElementWithImages
+import org.deafsapps.android.roomplayground.data.db.entity.ImageEntity
 import org.deafsapps.android.roomplayground.ui.theme.RoomplaygroundTheme
 import java.util.UUID
 import kotlin.random.Random
@@ -72,7 +74,8 @@ fun DatabaseOperations(modifier: Modifier = Modifier, db: CreationDatabase? = nu
         }
         OutlinedButton(onClick = {
             coroutineScope.launch {
-                db?.creationDao()?.updateCreation(creation = getUpdatedDummyCreation())?.let(::println)
+                db?.creationDao()?.updateCreation(creation = getUpdatedDummyCreation())
+                    ?.let(::println)
             }
         }, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Update Existing Creation")
@@ -85,13 +88,21 @@ fun DatabaseOperations(modifier: Modifier = Modifier, db: CreationDatabase? = nu
             Text(text = "Save New Component")
         }
         OutlinedButton(onClick = {
-            coroutineScope.launch {
-                val componentWithElements = getDummyComponentWithElements()
-                db?.creationDao()?.saveComponent(component = componentWithElements.component)?.let(::println)
-                db?.creationDao()?.saveElements(elements = componentWithElements.elements)?.let(::println)
+            db?.runInTransaction {
+                coroutineScope.launch {
+                    val componentWithElements = getDummyComponentWithElements()
+                    db.creationDao().saveComponent(component = componentWithElements.component)
+                        .let(::println)
+                    db.creationDao()
+                        .saveElements(elements = componentWithElements.elementsWithImages.map { it.element })
+                        .let(::println)
+                    db.creationDao()
+                        .saveImages(images = componentWithElements.elementsWithImages.flatMap { it.images })
+                        .let(::println)
+                }
             }
         }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Save New Component With Elements")
+            Text(text = "Save New Component With Elements And Images")
         }
         OutlinedButton(onClick = {
             coroutineScope.launch {
@@ -123,7 +134,7 @@ private fun getDummyComponentWithElements(): ComponentWithElements {
     val componentId = UUID.randomUUID().toString()
     return ComponentWithElements(
         component = getDummyComponent(componentId = componentId),
-        elements = getDummyElements(componentId = componentId)
+        elementsWithImages = getDummyElementsWithImages(componentId = componentId)
     )
 }
 
@@ -134,21 +145,45 @@ private fun getDummyComponent(componentId: String = UUID.randomUUID().toString()
         description = "A random component with Id = $componentId"
     )
 
-private fun getDummyElements(
+private fun getDummyElementsWithImages(
     componentId: String = UUID.randomUUID().toString()
-): List<ElementEntity> = listOf(
-    getDummyElement(componentId = componentId),
-    getDummyElement(componentId = componentId),
-    getDummyElement(componentId = componentId),
-    getDummyElement(componentId = componentId),
+): List<ElementWithImages> = listOf(
+    getDummyElementWithImages(componentId = componentId),
+    getDummyElementWithImages(componentId = componentId),
+    getDummyElementWithImages(componentId = componentId),
+    getDummyElementWithImages(componentId = componentId),
 )
 
-private fun getDummyElement(componentId: String = UUID.randomUUID().toString()): ElementEntity {
+private fun getDummyElementWithImages(
+    componentId: String = UUID.randomUUID().toString()
+): ElementWithImages {
     val elementId = UUID.randomUUID().toString()
-    return ElementEntity(
+    return ElementWithImages(
+        element = getDummyElement(elementId = elementId, componentId = componentId),
+        images = getDummyImages(elementId = elementId)
+    )
+}
+
+private fun getDummyElement(
+    elementId: String = UUID.randomUUID().toString(),
+    componentId: String = UUID.randomUUID().toString()
+): ElementEntity = ElementEntity(
+    elementId = elementId,
+    componentId = componentId,
+    description = "A random element with Id = $elementId"
+)
+
+private fun getDummyImages(elementId: String = UUID.randomUUID().toString()): List<ImageEntity> =
+    listOf(
+        getDummyImage(elementId = elementId), getDummyImage(elementId = elementId)
+    )
+
+private fun getDummyImage(elementId: String): ImageEntity {
+    val imageId = UUID.randomUUID().toString()
+    return ImageEntity(
+        imageId = UUID.randomUUID().toString(),
         elementId = elementId,
-        componentId = componentId,
-        description = "A random element with Id = $elementId"
+        description = "A rando image with ID = $imageId"
     )
 }
 

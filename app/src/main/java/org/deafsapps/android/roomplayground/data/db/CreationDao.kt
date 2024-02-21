@@ -10,6 +10,7 @@ import org.deafsapps.android.roomplayground.data.db.entity.ComponentEntity
 import org.deafsapps.android.roomplayground.data.db.entity.CreationEntity
 import org.deafsapps.android.roomplayground.data.db.entity.CreationWithComponents
 import org.deafsapps.android.roomplayground.data.db.entity.ElementEntity
+import org.deafsapps.android.roomplayground.data.db.entity.ImageEntity
 
 @Dao
 interface CreationDao {
@@ -25,6 +26,9 @@ interface CreationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveElements(elements: List<ElementEntity>): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveImages(images: List<ImageEntity>): List<Long>
 
     @Update
     suspend fun updateCreation(creation: CreationEntity): Int
