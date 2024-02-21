@@ -1,6 +1,5 @@
 package org.deafsapps.android.roomplayground.data.db.entity
 
-import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Relation
 
@@ -11,14 +10,24 @@ data class CreationWithComponents(
         parentColumn = "creation_id",
         entityColumn = "creation_id"
     )
-    val componentsAndElements: List<ComponentWithElements>
+    val componentsWithElements: List<ComponentWithElements>
 )
 
 data class ComponentWithElements(
     @Embedded val component: ComponentEntity,
     @Relation(
+        entity = ElementEntity::class,
         parentColumn = "component_id",
         entityColumn = "component_id"
     )
-    val elements: List<ElementEntity>
+    val elementsWithImages: List<ElementWithImages>
+)
+
+data class ElementWithImages(
+    @Embedded val element: ElementEntity,
+    @Relation(
+        parentColumn = "element_id",
+        entityColumn = "element_id"
+    )
+    val images: List<ImageEntity>
 )
