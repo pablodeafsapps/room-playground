@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "elements_entity",
-    indices = [Index("element_id", unique = true)],
+    indices = [Index("component_id"), Index("element_id", unique = true)],
     foreignKeys = [ForeignKey(
         ComponentEntity::class,
         parentColumns = ["component_id"],
