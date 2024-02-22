@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.room.Room
+import androidx.room.withTransaction
 import kotlinx.coroutines.launch
 import org.deafsapps.android.roomplayground.data.db.CreationDatabase
 import org.deafsapps.android.roomplayground.data.db.entity.ComponentEntity
@@ -30,7 +31,6 @@ import org.deafsapps.android.roomplayground.data.db.entity.ImageEntity
 import org.deafsapps.android.roomplayground.ui.theme.RoomplaygroundTheme
 import java.util.UUID
 import kotlin.random.Random
-
 
 class MainActivity : ComponentActivity() {
 
@@ -88,8 +88,8 @@ fun DatabaseOperations(modifier: Modifier = Modifier, db: CreationDatabase? = nu
             Text(text = "Save New Component")
         }
         OutlinedButton(onClick = {
-            db?.runInTransaction {
-                coroutineScope.launch {
+            coroutineScope.launch {
+                db?.withTransaction {
                     val componentWithElements = getDummyComponentWithElements()
                     db.creationDao().saveComponent(component = componentWithElements.component)
                         .let(::println)
